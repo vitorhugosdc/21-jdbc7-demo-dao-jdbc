@@ -1,5 +1,6 @@
 package model.dao;
 
+import db.DB;
 import model.dao.impl.SellerDaoJDBC;
 
 public class DaoFactory {
@@ -7,6 +8,9 @@ public class DaoFactory {
 	// Esse método retorna o tipo da interface, mas internamente ela vai retornar o
 	// tipo da implementação
 	public static SellerDao createSellerDao() {
-		return new SellerDaoJDBC();
+		return new SellerDaoJDBC(DB.getConnection()); // Como precisamos da conexão na implementação do SellerDaoJDBC,
+														// enviamos ela através do Factory (injeção de dependência, onde
+														// a classe não é responsável por instânciar suas dependências,
+														// estamos enviando ela como parâmetro na instanciação
 	}
 }

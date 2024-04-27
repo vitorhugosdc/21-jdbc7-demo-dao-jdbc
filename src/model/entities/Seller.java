@@ -1,15 +1,12 @@
 package model.entities;
 
 import java.io.Serializable;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Objects;
 
 public final class Seller implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-
-	private static DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
 	private Integer id;
 	private String name;
@@ -30,6 +27,14 @@ public final class Seller implements Serializable {
 		this.department = department;
 	}
 
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -46,6 +51,14 @@ public final class Seller implements Serializable {
 		this.email = email;
 	}
 
+	public Date getBirthDate() {
+		return birthDate;
+	}
+
+	public void setBirthDate(Date birthDate) {
+		this.birthDate = birthDate;
+	}
+
 	public Double getBaseSalary() {
 		return baseSalary;
 	}
@@ -54,20 +67,12 @@ public final class Seller implements Serializable {
 		this.baseSalary = baseSalary;
 	}
 
-	public Integer getId() {
-		return id;
-	}
-
-	public Date getBirthDate() {
-		return birthDate;
+	public Department getDepartment() {
+		return department;
 	}
 
 	public void setDepartment(Department department) {
 		this.department = department;
-	}
-
-	public Department getDepartment() {
-		return department;
 	}
 
 	@Override
