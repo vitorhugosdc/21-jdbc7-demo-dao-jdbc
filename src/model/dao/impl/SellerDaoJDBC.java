@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import db.DB;
@@ -44,14 +45,18 @@ public class SellerDaoJDBC implements SellerDao {
 		PreparedStatement st = null;
 		ResultSet rs = null;
 		try {
-			st = conn.prepareStatement(
-					"SELECT seller.*,department.Name as DepName " /*seller.* é pra retornar todos campos de seller, department.Name é só o campo name*/
-					+ "FROM seller INNER JOIN department " //INNER JOIN é a intersecção
-					+ "ON seller.DepartmentId = department.Id " 
-					+ "WHERE seller.Id = ?");
-			
-			st.setInt(1, id); //Colocando o Id do vendedor a ser pesquisado substituindo o placeholder '?' no PreparedStatement st
-			rs = st.executeQuery(); //Executando a busca no banco de dados
+			st = conn.prepareStatement("SELECT seller.*,department.Name as DepName " /*
+																						 * seller.* é pra retornar todos
+																						 * campos de seller,
+																						 * department.Name é só o campo
+																						 * name
+																						 */
+					+ "FROM seller INNER JOIN department " // INNER JOIN é a intersecção
+					+ "ON seller.DepartmentId = department.Id " + "WHERE seller.Id = ?");
+
+			st.setInt(1, id); // Colocando o Id do vendedor a ser pesquisado substituindo o placeholder '?' no
+								// PreparedStatement st
+			rs = st.executeQuery(); // Executando a busca no banco de dados
 
 			/*
 			 * IMPORTANTE
@@ -69,25 +74,15 @@ public class SellerDaoJDBC implements SellerDao {
 								 * pra verificar se a consulta teve resultado, pois se não tiver, não tem next
 								 * (nextRow), a primeira linha em sí
 								 */
-				// DICA SOBRE AS CONSULTAS: Caso tiver na dúvida, fazer no MySQL Workbench e ver
-				// os resultados e também os nomes das colunas, pra usar certinho
-				Department dep = new Department();
-				dep.setId(rs.getInt("DepartmentId"));
-				dep.setName(rs.getString("DepName")); // Por que DepName? por que na consulta SQL que fizemos,
-														// apelidamos o nome do departamento como DepName
-														// "department.Name as DepName"
 
-				Seller obj = new Seller();
+				Department dep = instantiateDepartment(rs);
 
-				obj.setId(rs.getInt("Id"));
-				obj.setName(rs.getString("Name"));
-				obj.setEmail(rs.getString("Email"));
-				obj.setBaseSalary(rs.getDouble("BaseSalary"));
-				obj.setBirthDate(rs.getDate("BirthDate"));
-				obj.setDepartment(dep);
+				Seller obj = instantiateSeller(rs, dep);
+
 				return obj;
 			}
-			return null; //Se retornar null aqui é porque a consulta no banco de dados não retornou nada, ou seja, não possui nenhuma linha de resultado
+			return null; // Se retornar null aqui é porque a consulta no banco de dados não retornou
+							// nada, ou seja, não possui nenhuma linha de resultado
 		} catch (SQLException e) {
 			throw new DbException(e.getMessage());
 		} finally {
@@ -100,8 +95,60 @@ public class SellerDaoJDBC implements SellerDao {
 
 	@Override
 	public List<Seller> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		List<Seller> sellers = new ArrayList<>();
+		try {
+			st = conn.prepareStatement(
+					"SELECT seller.*,department.Name as DepName FROM seller INNER JOIN department ON seller.DepartmentId = department.Id ORDER BY seller.id");
+
+			rs = st.executeQuery();
+
+			while (rs.next()) {
+
+				Department dep = instantiateDepartment(rs);
+
+				Seller obj = instantiateSeller(rs, dep);
+
+				sellers.add(obj);
+			}
+			return sellers.isEmpty() ? null : sellers;
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			// Não fecha a conexão, pois pode ser que vamos utilizar outros métodos, então
+			// quem fecha é o programa principal
+			DB.closeStatement(st);
+			DB.closeResultSet(rs);
+		}
 	}
 
+	private Seller instantiateSeller(ResultSet rs, Department dep) throws SQLException {
+		// DICA SOBRE AS CONSULTAS: Caso tiver na dúvida, fazer no MySQL Workbench e ver
+		// os resultados e também os nomes das colunas, pra usar certinho
+		Seller obj = new Seller();
+		obj.setId(rs.getInt("Id"));
+		obj.setName(rs.getString("Name"));
+		obj.setEmail(rs.getString("Email"));
+		obj.setBaseSalary(rs.getDouble("BaseSalary"));
+		obj.setBirthDate(rs.getDate("BirthDate"));
+		obj.setDepartment(dep);
+		return obj;
+	}
+
+	private Department instantiateDepartment(ResultSet rs) throws SQLException { // Por que throws ao invés de tratar a
+																					// excepção? Pois a Exceção já está
+																					// sendo tratada no método que chama
+																					// este método (findById, etc),
+																					// então throws pra o método que
+																					// chamou tratar e não tratar aqui
+		// DICA SOBRE AS CONSULTAS: Caso tiver na dúvida, fazer no MySQL Workbench e ver
+		// os resultados e também os nomes das colunas, pra usar certinho
+		Department dep = new Department();
+		dep.setId(rs.getInt("DepartmentId"));
+		dep.setName(rs.getString("DepName")); // Por que DepName? por que na consulta SQL que fizemos,
+												// apelidamos o nome do departamento como DepName
+												// "department.Name as DepName"
+		return dep;
+	}
 }

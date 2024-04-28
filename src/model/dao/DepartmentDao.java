@@ -3,7 +3,7 @@ package model.dao;
 import java.util.List;
 
 import model.entities.Department;
-
+//Interface que define quais métodos poderão ser utilizados no banco de dados do departamento (Department)
 public interface DepartmentDao {
 
 	void insert(Department obj);

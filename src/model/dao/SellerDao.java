@@ -3,7 +3,7 @@ package model.dao;
 import java.util.List;
 
 import model.entities.Seller;
-
+//Interface que define quais métodos poderão ser utilizados no banco de dados do vendedor (Seller)
 public interface SellerDao {
 	
 	void insert(Seller obj);
